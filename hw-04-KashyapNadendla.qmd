@@ -1,0 +1,174 @@
+---
+title: "hw-04-KashyapNadendla"
+author: "Kashyap Nadendla"
+format: html
+editor: visual
+---
+
+## Regression in R
+
+```{r}
+
+# Required packages
+if (!require(pacman))
+  install.packages("pacman")
+
+pacman::p_load(tidymodels,
+               tidyverse,
+               ranger,
+               randomForest,
+               glmnet,
+               gridExtra)
+
+# Global ggplot theme
+theme_set(theme_bw() + theme(legend.position = "top"))
+```
+
+```{r}
+
+cats_uk_reference <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2023/2023-01-31/cats_uk_reference.csv')
+```
+
+```{r}
+
+cats_uk_reference <- drop_na(cats_uk_reference)
+```
+
+## Multiple Linear Regression
+
+### Step 1: Split Data into Training and Test Sets
+
+```{r}
+
+numInstances <- 200  # number of data instances
+
+# Train/test split
+numTrain <- 20   # number of training instances
+numTest <- numInstances - numTrain
+
+set.seed(123) # For reproducibility
+
+#data <- tibble(X = X, y = y)
+
+split_obj <- initial_split(cats_uk_reference, prop = numTrain/numInstances)
+
+# Extract train and test data
+train_data <- training(split_obj)
+test_data <- testing(split_obj)
+
+# Extract X_train, X_test, y_train, y_test
+X_train <- train_data$hrs_indoors
+y_train <- train_data$prey_p_month
+
+X_test <- test_data$hrs_indoors
+y_test <- test_data$prey_p_month
+```
+
+### Step 2: Fit Regression model to training set
+
+```{r}
+
+# Create a linear regression model specification
+lin_reg_spec <- linear_reg() |> 
+  set_engine("lm")
+
+# Fit the model to the training data
+lin_reg_fit <- lin_reg_spec |> 
+  fit(prey_p_month ~ hrs_indoors, data = train_data)
+```
+
+```{r}
+
+# Apply model to the test set
+y_pred_test <- predict(lin_reg_fit, new_data = test_data) |>
+  pull(.pred)
+```
+
+```{r}
+
+# Plotting true vs predicted values
+ggplot() + 
+  geom_point(aes(x = as.vector(y_test), y = y_pred_test), color = 'black') +
+  ggtitle('Comparing true and predicted values for test set') +
+  xlab('True values for y') +
+  ylab('Predicted values for y')
+```
+
+```{r}
+
+# Prepare data for yardstick evaluation
+eval_data <- tibble(
+  truth = as.vector(y_test),
+  estimate = y_pred_test
+)
+
+# Model evaluation
+rmse_value <- rmse(data = eval_data, truth = truth, estimate = estimate)
+r2_value <- rsq(eval_data, truth = truth, estimate = estimate)
+
+cat("Root mean squared error =", sprintf("%.4f", rmse_value$.estimate), "\n")
+```
+
+```{r}
+
+# Display model parameters
+coef_values <- coef(lin_reg_fit$fit)  # Extract coefficients
+slope <- coef_values["hrs_indoors"]
+intercept <- coef_values["(Intercept)"]
+
+cat("Slope =", slope, "\n")
+```
+
+```{r}
+
+cat("Intercept =", intercept, "\n")
+```
+
+```{r}
+
+### Step 4: Postprocessing
+
+# Plot outputs
+ggplot() +
+  geom_point(aes(x = as.vector(X_test), y = as.vector(y_test)), color = 'black') +
+  geom_line(aes(x = as.vector(X_test), y = y_pred_test), color = 'blue', linewidth = 1) +
+  ggtitle(sprintf('Predicted Function: y = %.2fX + %.2f', slope, intercept)) +
+  xlab('X') +
+  ylab('y')
+```
+
+## Effect of Correlated Attributes
+
+```{r}
+
+# Generate the variables
+set.seed(1)
+X2 <- 0.5 * X + rnorm(numInstances, mean=0, sd=0.04)
+X3 <- 0.5 * X2 + rnorm(numInstances, mean=0, sd=0.01)
+X4 <- 0.5 * X3 + rnorm(numInstances, mean=0, sd=0.01)
+X5 <- 0.5 * X4 + rnorm(numInstances, mean=0, sd=0.01)
+
+# Create plots
+plot1 <- ggplot() +
+  geom_point(aes(X, X2), color='black') +
+  xlab('X') + ylab('X2') +
+  ggtitle(sprintf("Correlation between X and X2 = %.4f", cor(X[-c((numInstances-numTest+1):numInstances)], X2[-c((numInstances-numTest+1):numInstances)])))
+
+plot2 <- ggplot() +
+  geom_point(aes(X2, X3), color='black') +
+  xlab('X2') + ylab('X3') +
+  ggtitle(sprintf("Correlation between X2 and X3 = %.4f", cor(X2[-c((numInstances-numTest+1):numInstances)], X3[-c((numInstances-numTest+1):numInstances)])))
+
+plot3 <- ggplot() +
+  geom_point(aes(X3, X4), color='black') +
+  xlab('X3') + ylab('X4') +
+  ggtitle(sprintf("Correlation between X3 and X4 = %.4f", cor(X3[-c((numInstances-numTest+1):numInstances)], X4[-c((numInstances-numTest+1):numInstances)])))
+
+plot4 <- ggplot() +
+  geom_point(aes(X4, X5), color='black') +
+  xlab('X4') + ylab('X5') +
+  ggtitle(sprintf("Correlation between X4 and X5 = %.4f", cor(X4[-c((numInstances-numTest+1):numInstances)], X5[-c((numInstances-numTest+1):numInstances)])))
+
+# Combine plots into a 2x2 grid
+grid.arrange(plot1, plot2, plot3, plot4, ncol=2)
+```
