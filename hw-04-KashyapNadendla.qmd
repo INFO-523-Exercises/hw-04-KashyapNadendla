@@ -18,7 +18,7 @@ pacman::p_load(tidymodels,
                ranger,
                randomForest,
                glmnet,
-               gridExtra)
+               gridExtra,here)
 
 # Global ggplot theme
 theme_set(theme_bw() + theme(legend.position = "top"))
@@ -26,7 +26,9 @@ theme_set(theme_bw() + theme(legend.position = "top"))
 
 ```{r}
 
-cats_uk_reference <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2023/2023-01-31/cats_uk_reference.csv')
+#cats_uk_reference <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2023/2023-01-31/cats_uk_reference.csv')
+
+cats_uk_reference <- read_csv(here("data","cats_all.csv"))
 ```
 
 ```{r}
@@ -143,14 +145,15 @@ ggplot() +
 
 # Generate the variables
 set.seed(1)
-X2 <- 0.5 * X + rnorm(numInstances, mean=0, sd=0.04)
-X3 <- 0.5 * X2 + rnorm(numInstances, mean=0, sd=0.01)
-X4 <- 0.5 * X3 + rnorm(numInstances, mean=0, sd=0.01)
-X5 <- 0.5 * X4 + rnorm(numInstances, mean=0, sd=0.01)
+X <- cats_uk_reference$hrs_indoors
+X2 <- 0.5 * cats_uk_reference$age_years + rnorm(numInstances, mean=0, sd=0.04)
+#X3 <- 0.5 * cats_uk_reference$animal_reproductive_condition + rnorm(numInstances, mean=0, sd=0.01)
+X4 <- 0.5 * cats_uk_reference$animal_sex + rnorm(numInstances, mean=0, sd=0.01)
+X5 <- 0.5 * cats_uk_reference$n_cats + rnorm(numInstances, mean=0, sd=0.01)
 
 # Create plots
 plot1 <- ggplot() +
-  geom_point(aes(X, X2), color='black') +
+  geom_point(aes(cats_uk_reference$hrs_indoors, X2), color='black') +
   xlab('X') + ylab('X2') +
   ggtitle(sprintf("Correlation between X and X2 = %.4f", cor(X[-c((numInstances-numTest+1):numInstances)], X2[-c((numInstances-numTest+1):numInstances)])))
 
