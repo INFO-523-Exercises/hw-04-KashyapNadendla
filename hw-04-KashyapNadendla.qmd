@@ -40,7 +40,7 @@ cats_uk_reference <- drop_na(cats_uk_reference)
 
 ### Interpretation
 
-In a simple linear regression,the best fit model indicates that there is a decrease in prey per month with increase in age.
+Age is chosen as x and prey per month as y. In a simple linear regression,the best fit model indicates that there is a decrease in prey per month with increase in age.
 
 ```{r}
 
@@ -61,12 +61,14 @@ ggplot() +
 
 ### Step 1: Split Data into Training and Test Sets
 
+Here, we take around 80% of the dataset for training.
+
 ```{r}
 
 numInstances <- nrow(cats_uk_reference)
 
 # Train/test split
-numTrain <- 86  # number of training instances
+numTrain <- 640  # number of training instances
 numTest <- numInstances - numTrain
 
 set.seed(123) # For reproducibility
@@ -89,6 +91,8 @@ y_test <- test_data$prey_p_month
 
 ### Step 2: Fit Regression model to training set
 
+The model is fit for prey per month dependent on hours indoors.
+
 ```{r}
 
 # Create a linear regression model specification
@@ -100,12 +104,22 @@ lin_reg_fit <- lin_reg_spec |>
   fit(prey_p_month ~ hrs_indoors, data = train_data)
 ```
 
+The prediction is done on the test data which is around 20% of the dataset.
+
 ```{r}
 
 # Apply model to the test set
 y_pred_test <- predict(lin_reg_fit, new_data = test_data) |>
   pull(.pred)
 ```
+
+### Interpretation
+
+From the plot we can understand it is a poor fit model because the true and predicted values don't match.
+
+The high Root Mean Square value tells us the difference in true and predicted value which shows that there is a big difference.
+
+The negative slope suggests that there is a negative linear relationship between the hours indoors and the prey per month.
 
 ```{r}
 
@@ -147,6 +161,10 @@ cat("Slope =", slope, "\n")
 
 cat("Intercept =", intercept, "\n")
 ```
+
+### Interpretation
+
+We can observe the best fit model for the data. There is a slight decrease in prey per month with increase in hours indoors. The model equation is `prey = -0.06(hours indoors) + 4.22`.
 
 ```{r}
 
@@ -236,18 +254,6 @@ X_test4 <- cbind(X[test_indices], X2[test_indices], X3[test_indices], X4[test_in
 
 X_train5 <- cbind(X[train_indices], X2[train_indices], X3[train_indices], X4[train_indices], X5[train_indices])
 X_test5 <- cbind(X[test_indices], X2[test_indices], X3[test_indices], X4[test_indices], X5[test_indices])
-```
-
-```{r}
-
-length_X1 <- length(X_train2[, 1])
-length_X2 <- length(X_train2[, 2])
-length_y <- length(y_train)
-
-# Print the lengths
-cat("Length of X1:", length_X1, "\n")
-cat("Length of X2:", length_X2, "\n")
-cat("Length of y:", length_y, "\n")
 ```
 
 ```{r}
