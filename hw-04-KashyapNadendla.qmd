@@ -104,6 +104,8 @@ lin_reg_fit <- lin_reg_spec |>
   fit(prey_p_month ~ hrs_indoors, data = train_data)
 ```
 
+## Step 3: Apply Model to Test Set
+
 The prediction is done on the test data which is around 20% of the dataset.
 
 ```{r}
@@ -112,6 +114,8 @@ The prediction is done on the test data which is around 20% of the dataset.
 y_pred_test <- predict(lin_reg_fit, new_data = test_data) |>
   pull(.pred)
 ```
+
+## Step 4: Evaluate Model on Test Set
 
 ### Interpretation
 
@@ -146,6 +150,8 @@ r2_value <- rsq(eval_data, truth = truth, estimate = estimate)
 
 cat("Root mean squared error =", sprintf("%.4f", rmse_value$.estimate), "\n")
 ```
+
+## Step 5: Postprocessing
 
 ```{r}
 
@@ -471,7 +477,7 @@ final_results
 
 Lasso regression is a regularization approach that use shrinkage to reduce data values to a central point, such as the mean. It is a sort of linear regression in which feature selection and regularisation are combined.
 
-In Lasso, we can see that the sum of absolute weights has decreased to 3.5 which indicates a decrease in complexity in the model. Train error at 3.7 and test error at 4 remain constant with othe regression techniques used above.
+In Lasso, we can see that the sum of absolute weights has decreased to 3.5 which indicates a decrease in complexity in the model. Train error at 3.7 and test error at 4 remain constant with other regression techniques used above.
 
 ```{r}
 
@@ -585,6 +591,10 @@ ridge_results <- tibble(Model = "RidgeCV",
 cat("Selected alpha =", best_params$penalty, "\n")
 ```
 
+### Interpretation
+
+When compared to the initial model, the Ridge regression model did not improve prediction accuracy. The error on the training and test data remained consistent.
+
 ```{r}
 
 all_results <- bind_rows(results, ridge_results)
@@ -664,6 +674,10 @@ lasso_results <- tibble(Model = "LassoCV",
 
 cat("Selected alpha for Lasso =", best_params_lasso$penalty, "\n")
 ```
+
+### Interpretation
+
+The Sum of Absolute weights is reduced to 3.5 by Lasso Regression and hence we can say that complexity of the model has been decreased.
 
 ```{r}
 
