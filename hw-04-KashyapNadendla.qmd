@@ -401,7 +401,7 @@ A constant test error can also indicate underfitting in the model.
 
 The training error (3.7) is lower than the test error (4), which is a positive sign. It suggests that the model is not overfitting the training data excessively, as the performance on unseen data is reasonably close to the performance on the training data.
 
-The Sum of Absolute Weights indicates the complexity of the model based on the attributes. For 5 attributes selected, 4.5-4.8 is a reasonable value.
+The Sum of Absolute Weights indicates the complexity of the model based on the attributes. For 5 attributes selected, the value 4.5 is low indicating the model is not complex.
 
 ```{r}
 
@@ -409,6 +409,12 @@ results
 ```
 
 ## Ridge Regression
+
+### Interpretation
+
+Ridge Regression adds a penalty term to the ordinary least squars (OLS) objective function. The goal of this technique is to prevent overfitting and multicollinearity. A shrinkage effect on the coefficients, pushing them towards zero but rarely exactly to zero. \
+
+The results for Ridge Regressiona are similar to the above where in Multiple Linear Regression, the test error is constant meanwhile the sum of absolute weights jumps from 4 to 461 for the final model case which might indicate overfitting.
 
 ```{r}
 
@@ -460,6 +466,12 @@ final_results
 ```
 
 ## Lasso Regression
+
+### Interpretation
+
+Lasso regression is a regularization approach that use shrinkage to reduce data values to a central point, such as the mean. It is a sort of linear regression in which feature selection and regularisation are combined.
+
+In Lasso, we can see that the sum of absolute weights has decreased to 3.5 which indicates a decrease in complexity in the model. Train error at 3.7 and test error at 4 remain constant with othe regression techniques used above.
 
 ```{r}
 
